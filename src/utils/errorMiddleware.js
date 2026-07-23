@@ -2,7 +2,6 @@ import multer from "multer";
 import { ApiError } from "./ApiError.js";
 
 export const errorMiddleware = (error, req, res, next) => {
-    console.log(error);
     // Check Whether The Error Object Is Generated Through Multer Class Or Not.
     if (error instanceof multer.MulterError) {
         switch (error.code) {
