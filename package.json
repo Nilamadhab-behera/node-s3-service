@@ -1,0 +1,24 @@
+{
+  "name": "s3-service",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Nilamadhab Behera",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "test": ""
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1092.0",
+    "@aws-sdk/s3-request-presigner": "^3.1092.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "chalk": "^5.6.2"
+  }
+}
