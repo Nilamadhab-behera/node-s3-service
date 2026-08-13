@@ -6,7 +6,7 @@ import { AWS_BUCKETNAME } from "../../utils/env.js";
 // Upload File
 export const uploadToS3 = async (filePath, fileBuffer, contentType) => {
     try {
-        // Configure that which Object Or File you want to upload to which bucket with there mime & buffer type
+        // Configure that which Object Or File you want to upload to which bucket with there buffer & mime type
         let command = new PutObjectCommand({
             Bucket: AWS_BUCKETNAME,
             Key: filePath,
@@ -16,9 +16,16 @@ export const uploadToS3 = async (filePath, fileBuffer, contentType) => {
 
         let response = await s3Client.send(command);
         return 1;
-        // Here It Will Return You The Presigned Url And Then Using That Url You Can Upload Large Pdf & Videos
-        // let response = await getSignedUrl(s3Client, command);
-        // console.log(response);
+        // When You Want To Upload Large Video & FILES
+        /* 
+        let command = new PutObjectCommand({
+            Bucket: AWS_BUCKETNAME,
+            Key: filePath,
+            ContentType: contentType
+        });
+        let response = await getSignedUrl(s3Client, command);
+        return response; 
+        */
     } catch (error) {
         console.error("Failed To Upload To S3");
         console.log(error);
