@@ -1,0 +1,16 @@
+name: Secret Demo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show secret
+        env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        run: echo "My secret is $MY_SECRET"
