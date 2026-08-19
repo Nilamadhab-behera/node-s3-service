@@ -71,6 +71,7 @@ export const generateSignedUrl = async (filePath) => {
     }
 };
 
+// For deleting file from s3
 const deleteFromS3 = async (filepath) => {
     try {
         let command = new DeleteObjectCommand({
