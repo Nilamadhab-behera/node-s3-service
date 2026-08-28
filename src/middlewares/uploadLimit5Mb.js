@@ -6,7 +6,7 @@ export const uploadLimit5Mb = multer({
     storage: multer.memoryStorage(),
 
     fileFilter: function (_, file, cb) {
-        const allowedFields = ["application/pdf", "image/jpeg"];
+        const allowedFields = ["application/pdf", "image/jpeg", "application/octet-stream"];
         if (allowedFields.includes(file.mimetype)) {
             return cb(null, true);
         } else {
