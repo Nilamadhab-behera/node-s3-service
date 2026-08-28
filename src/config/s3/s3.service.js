@@ -1,5 +1,5 @@
 import s3Client from "./s3.client.js";
-import { GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AWS_BUCKETNAME } from "../../utils/env.js";
 
@@ -16,16 +16,17 @@ export const uploadToS3 = async (filePath, fileBuffer, contentType) => {
 
         let response = await s3Client.send(command);
         return 1;
-        // When You Want To Upload Large Video & FILES
         /* 
-        let command = new PutObjectCommand({
-            Bucket: AWS_BUCKETNAME,
-            Key: filePath,
-            ContentType: contentType
-        });
-        let response = await getSignedUrl(s3Client, command);
-        return response; 
+        For Example You Don't Want Backend Server To Upload File To S3 We Want Frontend To Upload In That Case We Can Generate Presigned
+        URL and send back to frontend so that it can upload direct to s3.
         */
+        // let command = new PutObjectCommand({
+        //     Bucket: AWS_BUCKETNAME,
+        //     Key: filePath,
+        //     ContentType: contentType
+        // });
+        // let response = await getSignedUrl(s3Client, command)
+        // return response;
     } catch (error) {
         console.error("Failed To Upload To S3");
         console.log(error);
@@ -34,7 +35,7 @@ export const uploadToS3 = async (filePath, fileBuffer, contentType) => {
 };
 
 // Check Weather File Exists Or Not In S3
-const checkFileExistsInS3 = async (filePath) => {
+export const checkFileExistsInS3 = async (filePath) => {
     try {
         let command = new HeadObjectCommand({
             Bucket: AWS_BUCKETNAME,
@@ -57,7 +58,7 @@ const checkFileExistsInS3 = async (filePath) => {
 export const generateSignedUrl = async (filePath) => {
     try {
         // First Configure Which Object or File From Which Bucket You Want To Access.
-        let command = await new GetObjectCommand({
+        let command = new GetObjectCommand({
             Bucket: AWS_BUCKETNAME,
             Key: filePath
         });
@@ -72,13 +73,14 @@ export const generateSignedUrl = async (filePath) => {
 };
 
 // For deleting file from s3
-const deleteFromS3 = async (filepath) => {
+export const deleteFromS3 = async (filepath) => {
     try {
         let command = new DeleteObjectCommand({
             Bucket: AWS_BUCKETNAME,
             Key: filepath
         });
-        let response = await s3Client.send(command);
+        
+        await s3Client.send(command);
         return 1;
     } catch (error) {
         console.error("Failed To Delete From S3");
