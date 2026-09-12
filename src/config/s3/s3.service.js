@@ -1,7 +1,12 @@
 import s3Client from "./s3.client.js";
-import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import {
+    PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, CreateMultipartUploadCommand, UploadPartCommand,
+    CompleteMultipartUploadCommand
+
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AWS_BUCKETNAME } from "../../utils/env.js";
+import { ApiError } from "../../utils/ApiError.js";
 
 // Upload File
 export const uploadToS3 = async (filePath, fileBuffer, contentType) => {
@@ -79,7 +84,7 @@ export const deleteFromS3 = async (filepath) => {
             Bucket: AWS_BUCKETNAME,
             Key: filepath
         });
-        
+
         await s3Client.send(command);
         return 1;
     } catch (error) {
@@ -88,3 +93,65 @@ export const deleteFromS3 = async (filepath) => {
         return 0;
     }
 };
+
+// For Uploading Large File
+export const uploadLargeFile = async (filePath, contentType) => {
+    try {
+        let command = new CreateMultipartUploadCommand({
+            Bucket: AWS_BUCKETNAME,
+            Key: filePath,
+            ContentType: contentType
+        });
+
+        let response = await s3Client.send(command);
+        return response;
+    } catch (error) {
+        console.log(error);
+        throw new ApiError({ message: "Failed To Generate Upload Id", status: 500 });
+    }
+};
+
+// Generate Presigned Urls
+export const generatePresignedUrls = async (uploadId, key, chunks) => {
+    try {
+        let presignedUrls = Array.from({ length: chunks }, async (_, i) => {
+            const partNumber = i + 1;
+
+            const command = new UploadPartCommand({
+                Bucket: AWS_BUCKETNAME,
+                Key: key,
+                UploadId: uploadId,
+                PartNumber: partNumber,
+            });
+
+            const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 15 });
+
+            return { partNumber, url };
+        });
+
+        return await Promise.all(presignedUrls);
+    } catch (error) {
+        throw new ApiError({ message: "Failed To Generate Presigned Urls", status: 500 });
+    };
+};
+
+export const completeLargeFileUpload = async (uploadId, key, parts) => {
+    try {
+        const command = new CompleteMultipartUploadCommand({
+            Bucket: AWS_BUCKETNAME,
+            Key: key,
+            UploadId: uploadId,
+            MultipartUpload: {
+                Parts: parts.map((part) => ({
+                    PartNumber: part.partNumber,
+                    ETag: part.eTag,
+                })),
+            }
+        });
+
+        await s3Client.send(command);
+    } catch (error) {
+        console.log(error);
+        throw new ApiError({ message: "Failed to complete multipart upload", status: 500 });
+    }
+}
